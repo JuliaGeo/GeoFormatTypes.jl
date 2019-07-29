@@ -9,7 +9,13 @@ module CoordinateReferenceSystemsBase
 const PROJ4_PREFIX = "+proj="
 const EPSG_PREFIX = "EPSG:"
 
-export AbstractCRSdefinition, Proj4string, WellKnownText, EPSGcode, GeoJSONdictCRS
+export AbstractCRSdefinition, Proj4string, WellKnownText, EPSGcode, GeoJSONdictCRS, crs
+
+"""
+Return the coordinate reference system of an object,
+in AbstractCRSdefinition 
+"""
+function crs end
 
 """
 Abstract type for all coordinate reference system definitions.
@@ -28,6 +34,8 @@ Proj4string(input::AbstractString) = begin
     Proj4string(input)
 end
 
+Base.show(io::IO, crs::Proj4string) = print(io, "Proj 4:\n$(crs.data)")
+
 
 """
 Well known text CRS string
@@ -36,12 +44,16 @@ struct WellKnownText <: AbstractCRSdefinition
     data::String
 end
 
+Base.show(io::IO, crs::WellKnownText) = print(io, "Well Known Text:\n$(crs.data)")
+
 """
 EPSG integer code
 """
 struct EPSGcode <: AbstractCRSdefinition
     data::Int
 end
+
+Base.show(io::IO, crs::EPSGcode) = print(io, "EPSGcode: $EPSG_PREFIX$(crs.data)")
 
 """
 Constructor for EPSG:1234 style strings

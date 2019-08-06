@@ -6,10 +6,13 @@ Methods are found in `CoordinateReferenceSystems.jl`.
 """
 module CoordinateReferenceSystemsBase
 
+export AbstractCRSdefinition, Proj4string, WellKnownText, EPSGcode, GeoJSONdictCRS, NoCRS
+
+export crs
+
 const PROJ4_PREFIX = "+proj="
 const EPSG_PREFIX = "EPSG:"
 
-export AbstractCRSdefinition, Proj4string, WellKnownText, EPSGcode, GeoJSONdictCRS, crs
 
 """
 Return the coordinate reference system of an object,
@@ -70,6 +73,8 @@ geoJSON CRS, as from GeoJSON.jl
 struct GeoJSONdictCRS <: AbstractCRSdefinition
     data::Dict{String,Any}
 end
+
+struct NoCRS <: AbstractCRSdefinition end
 
 
 end # module

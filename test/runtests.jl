@@ -1,6 +1,5 @@
-using CoordinateReferenceSystemsBase
-using Test
+using GeoFormatTypes, Test
 
-@testset "CoordinateReferenceSystemsBase.jl" begin
-    # Write your own tests here.
+@testset "GeoFormatTypes.jl" begin
+
 end

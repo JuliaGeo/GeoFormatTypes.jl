@@ -1,17 +1,10 @@
-using Documenter, CoordinateReferenceSystemsBase
+using Documenter, GeoFormatTypes
 
 makedocs(;
-    modules=[CoordinateReferenceSystemsBase],
-    format=Documenter.HTML(),
-    pages=[
-        "Home" => "index.md",
-    ],
-    repo="https://github.com/rafaqz/CoordinateReferenceSystemsBase.jl/blob/{commit}{path}#L{line}",
-    sitename="CoordinateReferenceSystemsBase.jl",
-    authors="Rafael Schouten <rafaelschouten@gmail.com>",
-    assets=String[],
+    modules = [GeoFormatTypes],
+    sitename = "GeoFormatTypes.jl",
 )
 
 deploydocs(;
-    repo="github.com/rafaqz/CoordinateReferenceSystemsBase.jl",
+    repo="github.com/rafaqz/GeoFormatTypes.jl",
 )

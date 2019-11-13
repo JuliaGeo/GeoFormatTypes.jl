@@ -11,4 +11,3 @@ ProjString("+proj=merc +lat_ts=56.5 +ellps=GRS80")
 GML("")
 KML("")
 GeoJSON("")
-GeoJSONdict(Dict());

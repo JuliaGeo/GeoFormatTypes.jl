@@ -1,3 +1,3 @@
 var documenterSearchIndex = {"docs":
-[{"location":"#CoordinateReferenceSystemsBase.jl-1","page":"CoordinateReferenceSystemsBase.jl","title":"CoordinateReferenceSystemsBase.jl","text":"","category":"section"},{"location":"#","page":"CoordinateReferenceSystemsBase.jl","title":"CoordinateReferenceSystemsBase.jl","text":"","category":"page"},{"location":"#","page":"CoordinateReferenceSystemsBase.jl","title":"CoordinateReferenceSystemsBase.jl","text":"Modules = [CoordinateReferenceSystemsBase]","category":"page"}]
+[{"location":"#GeoFormatTypes.jl-1","page":"GeoFormatTypes.jl","title":"GeoFormatTypes.jl","text":"","category":"section"},{"location":"#","page":"GeoFormatTypes.jl","title":"GeoFormatTypes.jl","text":"Modules = [DynamicGrids]","category":"page"}]
 }

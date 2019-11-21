@@ -7,16 +7,59 @@ module GeoFormatTypes
     read(path, String)
 end GeoFormatTypes
 
-export GeoFormat, EPSGcode, ESRI, GML, GeoJSON, KML,
-       ProjString, WellKnownText, WellKnownBinary
+export GeoFormat
+
+export CoordinateReferenceSystemFormat, EPSG, ProjString 
+
+export GeoFormat, GeoJSON, KML
+
+export MixedFormat, GML 
+
+export AbstractWellKnownText, WellKnownText, WellKnownText2, ESRIWellKnownText, WellKnownBinary
 
 const PROJ_PREFIX = "+proj="
 const EPSG_PREFIX = "EPSG:"
 
+
 """
-Abstract supertype for all formats
+    projection(f::GeoFormat)
+
+Get the projection of a GeoFormat type. This may be itself 
+for [`CoordinateReferenceSystemFormat`](@ref) or a projection explicitly 
+connected to another format type for [`GeometryFormat`](@ref). 
+It may need to be parsed for some [`MixedFormat`](@ref).
+"""
+function projection end
+
+"""
+    val(f::GeoFormat)
+
+Get the contained value of a GeoFormat type.
+"""
+function val end
+
+"""
+Abstract supertype for geospatial data formats
 """
 abstract type GeoFormat end
+
+"""
+Formats representing coordinate reference systems
+"""
+abstract type CoordinateReferenceSystemFormat <: GeoFormat end
+
+projection(f::CoordinateReferenceSystemFormat) = f
+
+"""
+Formats representing geometries. These wrappers simply mark string
+formats that may optionally be converted to Geoetry objects at a later point.
+"""
+abstract type GeometryFormat <: GeoFormat end
+
+"""
+Formats that may hold either or both coordinate reference systems and geometries.
+"""
+abstract type MixedFormat <: GeoFormat end
 
 val(x::GeoFormat) = x.val
 
@@ -27,7 +70,7 @@ Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(input)
 """
 Proj string
 """
-struct ProjString <: GeoFormat
+struct ProjString <: CoordinateReferenceSystemFormat
     val::String
     ProjString(input::String) = begin
         startswith(input, PROJ_PREFIX) ||
@@ -36,84 +79,90 @@ struct ProjString <: GeoFormat
     end
 end
 
-Base.show(io::IO, x::ProjString) = print(io, "Proj:\n$(val(x))")
+"""
+Well known text has a number of versions and standards, and can 
+represent coordinate reference systems or geometric data.
+"""
+abstract type AbstractWellKnownText <: MixedFormat end
+
+projection(f::AbstractWellKnownText) = f
 
 """
-Well known text
+Well known text v1 following the OGC standard
 """
-struct WellKnownText <: GeoFormat
+struct WellKnownText <: AbstractWellKnownText
     val::String
 end
 
-Base.show(io::IO, x::WellKnownText) = print(io, "Well Known Text:\n$(val(x))")
+"""
+Well known text v2 following the new OGC standard
+"""
+struct WellKnownText2 <: AbstractWellKnownText
+    val::String
+end
 
+"""
+Well known text following the ESRI standard
+"""
+struct ESRIWellKnownText <: AbstractWellKnownText
+    val::String
+end
 
 """
 Well known binary
 """
-struct WellKnownBinary{T} <: GeoFormat
+struct WellKnownBinary{T} <: AbstractWellKnownText
     val::T
 end
 
-Base.show(io::IO, x::WellKnownBinary) = print(io, "Well Known Binary")
+Base.convert(::Type{String}, input::WellKnownBinary) = error("`convert` is not defined for `WellKnownBinary`")
+
 
 """
-EPSG code
+EPSG code representing a projection from the EPSG spatial reference system registry.
 """
-struct EPSGcode <: GeoFormat
+struct EPSG <: CoordinateReferenceSystemFormat
     val::Int
 end
+
 """
-Constructor for EPSG:1234 style strings
+Constructor for "EPSG:1234" string input
 """
-EPSGcode(input::AbstractString) = begin
+EPSG(input::AbstractString) = begin
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
     code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
-    EPSGcode(code)
+    EPSG(code)
 end
 
-Base.convert(::Type{Int}, input::EPSGcode) = val(input)
-Base.convert(::Type{String}, input::EPSGcode) = string(EPSG_PREFIX, val(input))
-Base.convert(::Type{EPSGcode}, input::Int) = EPSGcode(input)
-
-Base.show(io::IO, x::EPSGcode) = print(io, "EPSGcode: $EPSG_PREFIX$(val(x))")
-
-"""
-ESRI code
-"""
-struct ESRI <: GeoFormat
-    val::String
-end
-
-Base.show(io::IO, x::ESRI) = print(io, "ESRI: $(val(x))")
+Base.convert(::Type{Int}, input::EPSG) = val(input)
+Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, val(input))
+Base.convert(::Type{EPSG}, input::Int) = EPSG(input)
 
 """
 Keyhole Markup Language
 """
-struct KML <: GeoFormat
+struct KML <: GeometryFormat
     val::String
 end
 
-Base.show(io::IO, x::KML) = print(io, "KML:\n$(val(x))")
+projection(f::KML) = EPSG(4326)
 
 """
 Geography Markup Language
 """
-struct GML <: GeoFormat
+struct GML <: MixedFormat
     val::String
 end
 
-Base.show(io::IO, x::GML) = print(io, "GML:\n$(val(x))")
+projection(f::GML) = error("No parser provided to get projection from GML")
 
 """
-GeoJSON
-
-Can be a string or a Dict? Will need to handle convert for Dict.
+GeoJSON String or Dict
 """
-struct GeoJSON{T} <: GeoFormat
+struct GeoJSON{T} <: GeometryFormat
     val::T
 end
 
-Base.show(io::IO, x::GeoJSON) = print(io, "GeoJSON:\n$(repr(val(x)))")
+projection(f::GeoJSON) = EPSG(4326)
 
 end # module

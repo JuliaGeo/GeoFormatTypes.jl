@@ -1,8 +1,5 @@
-# CoordinateReferenceSystemsBase.jl
-
-```@index
-```
+# GeoFormatTypes.jl
 
 ```@autodocs
-Modules = [CoordinateReferenceSystemsBase]
+Modules = [GeoFormatTypes]
 ```

@@ -19,17 +19,9 @@ export AbstractWellKnownText, WellKnownText, WellKnownText2, ESRIWellKnownText, 
 
 const PROJ_PREFIX = "+proj="
 const EPSG_PREFIX = "EPSG:"
+# TODO more verification that types are wrapping the right format.
 
 
-"""
-    projection(f::GeoFormat)
-
-Get the projection of a GeoFormat type. This may be itself 
-for [`CoordinateReferenceSystemFormat`](@ref) or a projection explicitly 
-connected to another format type for [`GeometryFormat`](@ref). 
-It may need to be parsed for some [`MixedFormat`](@ref).
-"""
-function projection end
 
 """
     val(f::GeoFormat)
@@ -47,8 +39,6 @@ abstract type GeoFormat end
 Formats representing coordinate reference systems
 """
 abstract type CoordinateReferenceSystemFormat <: GeoFormat end
-
-projection(f::CoordinateReferenceSystemFormat) = f
 
 """
 Formats representing geometries. These wrappers simply mark string
@@ -85,8 +75,6 @@ represent coordinate reference systems or geometric data.
 """
 abstract type AbstractWellKnownText <: MixedFormat end
 
-projection(f::AbstractWellKnownText) = f
-
 """
 Well known text v1 following the OGC standard
 """
@@ -119,7 +107,8 @@ Base.convert(::Type{String}, input::WellKnownBinary) = error("`convert` is not d
 
 
 """
-EPSG code representing a projection from the EPSG spatial reference system registry.
+EPSG code representing a coordinate reference system from the 
+EPSG spatial reference system registry.
 """
 struct EPSG <: CoordinateReferenceSystemFormat
     val::Int
@@ -145,8 +134,6 @@ struct KML <: GeometryFormat
     val::String
 end
 
-projection(f::KML) = EPSG(4326)
-
 """
 Geography Markup Language
 """
@@ -154,15 +141,11 @@ struct GML <: MixedFormat
     val::String
 end
 
-projection(f::GML) = error("No parser provided to get projection from GML")
-
 """
 GeoJSON String or Dict
 """
 struct GeoJSON{T} <: GeometryFormat
     val::T
 end
-
-projection(f::GeoJSON) = EPSG(4326)
 
 end # module

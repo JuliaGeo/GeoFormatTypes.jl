@@ -1,8 +1,8 @@
 # GeoFormatTypes
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://rafaqz.github.io/GeoJS.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://rafaqz.github.io/GeoFormatTypes.jl/dev)
-[![Build Status](https://travis-ci.org/rafaqz/GeoFormatTypes.jl.svg?branch=master)](https://travis-ci.org/rafaqz/GeoFormatTypes.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaGeo.github.io/GeoFormatTypes.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaGeo.github.io/GeoFormatTypes.jl/dev)
+[![Build Status](https://travis-ci.org/JuliaGeo/GeoFormatTypes.jl.svg?branch=master)](https://travis-ci.org/JuliaGeo/GeoFormatTypes.jl)
 
 Geographic data and metadata often has multiple formats that can represent the
 same informations, such as Well Known Text, Proj4 strings, EPSG codes, GeoJSON

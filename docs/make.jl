@@ -6,5 +6,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/rafaqz/GeoFormatTypes.jl",
+    repo="github.com/JuliaGeo/GeoFormatTypes.jl",
 )

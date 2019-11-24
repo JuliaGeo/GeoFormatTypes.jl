@@ -1,7 +1,7 @@
 name = "GeoFormatTypes"
 uuid = "68eda718-8dee-11e9-39e7-89f7f65f511f"
 authors = ["Rafael Schouten <rafaelschouten@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [compat]
 julia = "1"

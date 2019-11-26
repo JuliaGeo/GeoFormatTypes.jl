@@ -11,7 +11,7 @@ export GeoFormat
 
 export CoordinateReferenceSystemFormat, EPSG, ProjString 
 
-export GeoFormat, GeoJSON, KML
+export GeometryFormat, GeoJSON, KML
 
 export MixedFormat, GML 
 

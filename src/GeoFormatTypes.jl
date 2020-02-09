@@ -40,24 +40,25 @@ Abstract supertype for geospatial data formats
 abstract type GeoFormat end
 
 # Convert from the same type does nothing.
-Base.convert(::T, source::S) where {T<:GeoFormat,S<:T} = source
+Base.convert(::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:T1} = source
 # Convert uses the `mode` trait to distinguish crs form geometry conversion
-Base.convert(target::Type{<:GeoFormat}, input::GeoFormat) = begin
-    inputmode = mode(input)
+Base.convert(target::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:GeoFormat} = begin
+    formatmode = mode(source)
     targetmode = mode(target)
-    convertmode = if inputmode isa Mixed
+    convertmode = if formatmode isa Mixed
         if targetmode isa Mixed
             Geom() # Geom is the default if both formats are mixed
         else
             targetmode
         end
-    elseif targetmode isa typeof(inputmode)
-        inputmode
+    elseif targetmode isa typeof(formatmode)
+        formatmode
     else
-        throw(ArgumentError("cannot convert $(typeof(input)) to $target"))
+        throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
     end
-    convert(target, convertmode, input)
+    convert(target, convertmode, source)
 end
+
 
 """
 Formats representing coordinate reference systems
@@ -94,7 +95,7 @@ struct ProjString <: CoordinateReferenceSystemFormat
     val::String
     ProjString(input::String) = begin
         startswith(input, PROJ_PREFIX) ||
-            throw(ArgumentError("String $input does not start with $PROJ_PREFIX"))
+            throw(ArgumentError("Not a Proj string: $input does not start with $PROJ_PREFIX"))
         new(input)
     end
 end

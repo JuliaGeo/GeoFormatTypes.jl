@@ -43,18 +43,27 @@ abstract type GeoFormat end
 Base.convert(::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:T1} = source
 # Convert uses the `mode` trait to distinguish crs form geometry conversion
 Base.convert(target::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:GeoFormat} = begin
-    formatmode = mode(source)
+    sourcemode = mode(source)
     targetmode = mode(target)
-    convertmode = if formatmode isa Mixed
-        if targetmode isa Mixed
+    convertmode = if targetmode isa Geom
+        if sourcemode isa Union{Mixed,Geom}
             Geom() # Geom is the default if both formats are mixed
         else
-            targetmode
+            throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
         end
-    elseif targetmode isa typeof(formatmode)
-        formatmode
-    else
-        throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
+    elseif targetmode isa CRS
+        if sourcemode isa Union{Mixed,CRS}
+            CRS()
+        else
+            throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
+        end
+    else # targetmode isa Mixed
+        # Mixed to Mixed defaults to Geom
+        if sourcemode isa Union{Mixed,Geom}
+            Geom()
+        else
+            CRS()
+        end
     end
     convert(target, convertmode, source)
 end
@@ -120,6 +129,7 @@ struct WellKnownText{X,T<:String} <: AbstractWellKnownText{X}
     mode::X
     val::T
 end
+WellKnownText(val) = WellKnownText(Mixed(), val)
 
 """
 Well known text v2 following the new OGC standard
@@ -128,6 +138,7 @@ struct WellKnownText2{X,T<:String} <: AbstractWellKnownText{X}
     mode::X
     val::T
 end
+WellKnownText2(val) = WellKnownText(Mixed(), val)
 
 """
 Well known text following the ESRI standard
@@ -144,6 +155,7 @@ struct WellKnownBinary{X,T} <: MixedFormat{X}
     mode::X
     val::T
 end
+WellKnownBinary(val) = WellKnownBinary(Mixed(), val)
 
 Base.convert(::Type{String}, input::WellKnownBinary) =
     error("`convert` to `String` is not defined for `WellKnownBinary`")
@@ -184,6 +196,7 @@ struct GML{X,T<:String} <: MixedFormat{X}
     mode::X
     val::T
 end
+GML(val) = GML(Mixed(), val)
 
 """
 GeoJSON String or Dict

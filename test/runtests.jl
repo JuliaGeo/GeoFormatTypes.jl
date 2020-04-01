@@ -1,19 +1,66 @@
 using GeoFormatTypes, Test
 using GeoFormatTypes: Geom, CRS, Mixed
 
-@test_throws ArgumentError ProjString("+lat_ts=56.5 +ellps=GRS80")
-convert(String, ProjString("+proj=merc +lat_ts=56.5 +ellps=GRS80")) == "+proj=merc +lat_ts=56.5 +ellps=GRS80"
+@testset "Test construcors" begin
+    @test_throws ArgumentError ProjString("+lat_ts=56.5 +ellps=GRS80")
+    @test_throws ArgumentError EPSG("ERROR:4326")
+    @test EPSG("EPSG:4326") == EPSG(4326)
+end
 
-@test_throws ArgumentError EPSG("ERROR:4326")
-@test convert(String, EPSG("EPSG:4326")) == "EPSG:4326" 
-@test convert(String, EPSG(4326)) == "EPSG:4326" 
-@test convert(Int, EPSG("EPSG:4326")) == 4326 
+@testset "Test conversion to string or int" begin
+    @test convert(String, ProjString("+proj=test")) == "+proj=test"
+    @test convert(String, EPSG(4326)) == "EPSG:4326"
+    @test convert(Int, EPSG(4326)) == 4326
+    @test convert(String, WellKnownText("test")) == "test"
+    @test convert(String, WellKnownText2("test")) == "test"
+    @test convert(String, GML("test")) == "test"
+    @test convert(String, KML("test")) == "test"
+    @test convert(String, GeoJSON("test")) == "test"
+end
 
-@test convert(String, WellKnownText(Geom(), "test")) == "test"
-@test convert(String, WellKnownText2(CRS(), "test")) == "test"
-@test convert(String, ESRIWellKnownText(Geom(), "test")) == "test"
-@test convert(String, GML(Mixed(), "test")) == "test"
-@test convert(String, KML("test")) == "test"
-@test convert(String, GeoJSON("test")) == "test"
 
-@test_throws ArgumentError convert(KML, ProjString("+proj=test"))
+# `convert` placeholder methods
+Base.convert(target::Type{<:GeoFormat}, mode::Union{Geom,Type{Geom}}, source::GeoFormat) =
+    :geom
+Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoFormat) =
+    :crs
+
+@testset "Test convert mode allocation" begin
+    @testset "Test identical type is passed through unchanged" begin
+        @test convert(WellKnownText, WellKnownText(Mixed(), "test")) == WellKnownText(Mixed(), "test")
+        @test convert(ProjString, ProjString("+proj=test")) == ProjString("+proj=test")
+    end
+    @testset "Test conversions are assigned to crs or geom correctly" begin
+        @test convert(WellKnownText, WellKnownText2(CRS(), "test")) == :crs
+        @test convert(WellKnownText2, WellKnownText(CRS(), "test")) == :crs
+        @test convert(WellKnownBinary, WellKnownText(CRS(), "test")) == :crs
+        @test convert(ProjString, WellKnownText(CRS(), "test")) == :crs
+        @test convert(EPSG, ProjString("+proj=test")) == :crs
+        @test convert(CoordSys, ProjString("+proj=test")) == :crs
+
+        @test convert(GeoJSON, WellKnownText(Geom(), "test")) == :geom
+        @test convert(KML, WellKnownText(Geom(), "test")) == :geom
+        @test convert(GML, WellKnownText(Geom(), "test")) == :geom
+        @test convert(ESRIWellKnownText, WellKnownText(Geom(), "test")) == :geom
+        @test convert(WellKnownBinary, WellKnownText(Geom(), "test")) == :geom
+        @test convert(WellKnownText2, WellKnownText(Geom(), "test")) == :geom
+        @test convert(WellKnownText2, WellKnownText(Geom(), "test")) == :geom
+        @test convert(WellKnownText, WellKnownText2(Geom(), "test")) == :geom
+
+        @test convert(GeoJSON, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(KML, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(GML, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(ESRIWellKnownText, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(WellKnownBinary, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(WellKnownText2, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(WellKnownText2, WellKnownText(Mixed(), "test")) == :geom
+        @test convert(WellKnownText, WellKnownText2(Mixed(), "test")) == :geom
+    end
+    @testset "Test conversions that are not possible throw an error" begin
+        @test_throws ArgumentError convert(KML, ProjString("+proj=test"))
+        @test_throws ArgumentError convert(GeoJSON, ProjString("+proj=test"))
+        @test_throws ArgumentError convert(ProjString, WellKnownText(Geom(), "test"))
+        @test_throws ArgumentError convert(CoordSys, WellKnownText(Geom(), "test"))
+        @test_throws ArgumentError convert(EPSG, WellKnownText(Geom(), "test"))
+    end
+end

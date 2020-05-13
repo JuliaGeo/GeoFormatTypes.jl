@@ -42,7 +42,7 @@ abstract type GeoFormat end
 # Convert from the same type does nothing.
 Base.convert(::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:T1} = source
 # Convert uses the `mode` trait to distinguish crs form geometry conversion
-Base.convert(target::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:GeoFormat} = begin
+Base.convert(target::Type{T1}, source::T2; kwargs...) where {T1<:GeoFormat,T2<:GeoFormat} = begin
     sourcemode = mode(source)
     targetmode = mode(target)
     convertmode = if targetmode isa Geom
@@ -65,7 +65,7 @@ Base.convert(target::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:GeoFormat} =
             CRS()
         end
     end
-    convert(target, convertmode, source)
+    convert(target, convertmode, source; kwargs...)
 end
 
 

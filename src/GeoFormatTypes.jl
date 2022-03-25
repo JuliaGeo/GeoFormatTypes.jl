@@ -95,7 +95,7 @@ mode(::Type{<:MixedFormat{M}}) where M = M()
 
 # Most GeoFormat types wrap String or have a constructor for string inputs
 Base.convert(::Type{String}, input::GeoFormat) = val(input)
-Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(input)
+Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input))
 
 """
 Proj string
@@ -125,27 +125,27 @@ abstract type AbstractWellKnownText{X} <: MixedFormat{X} end
 """
 Well known text v1 following the OGC standard
 """
-struct WellKnownText{X,T<:String} <: AbstractWellKnownText{X}
+struct WellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
 WellKnownText(val) = WellKnownText(Mixed(), val)
 
 """
 Well known text v2 following the new OGC standard
 """
-struct WellKnownText2{X,T<:String} <: AbstractWellKnownText{X}
+struct WellKnownText2{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
 WellKnownText2(val) = WellKnownText2(Mixed(), val)
 
 """
 Well known text following the ESRI standard
 """
-struct ESRIWellKnownText{X,T<:String} <: AbstractWellKnownText{X}
+struct ESRIWellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
 ESRIWellKnownText(val) = ESRIWellKnownText(Mixed(), val)
 
@@ -173,7 +173,7 @@ end
 """
 Constructor for "EPSG:1234" string input
 """
-EPSG(input::AbstractString) = begin
+function EPSG(input::AbstractString) = begin
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
     code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
     EPSG(code)
@@ -193,9 +193,9 @@ end
 """
 Geography Markup Language
 """
-struct GML{X,T<:String} <: MixedFormat{X}
+struct GML{X} <: MixedFormat{X}
     mode::X
-    val::T
+    val::String
 end
 GML(val) = GML(Mixed(), val)
 

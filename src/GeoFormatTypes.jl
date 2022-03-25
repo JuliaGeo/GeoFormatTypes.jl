@@ -9,7 +9,7 @@ end GeoFormatTypes
 
 export GeoFormat
 
-export CoordinateReferenceSystemFormat, EPSG, ProjString, CoordSys
+export CoordinateReferenceSystemFormat, EPSG, ProjString, CoordSys, GML
 
 export GeometryFormat, GeoJSON, KML
 
@@ -138,7 +138,7 @@ struct WellKnownText2{X,T<:String} <: AbstractWellKnownText{X}
     mode::X
     val::T
 end
-WellKnownText2(val) = WellKnownText(Mixed(), val)
+WellKnownText2(val) = WellKnownText2(Mixed(), val)
 
 """
 Well known text following the ESRI standard
@@ -147,6 +147,7 @@ struct ESRIWellKnownText{X,T<:String} <: AbstractWellKnownText{X}
     mode::X
     val::T
 end
+ESRIWellKnownText(val) = ESRIWellKnownText(Mixed(), val)
 
 """
 Well known binary

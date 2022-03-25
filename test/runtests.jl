@@ -7,12 +7,27 @@ using GeoFormatTypes: Geom, CRS, Mixed
     @test EPSG("EPSG:4326") == EPSG(4326)
 end
 
+@testset "Test constructors" begin
+    @test ProjString("+proj=test") isa ProjString{String}
+    @test EPSG(4326) isa EPSG
+    @test WellKnownText("test") isa WellKnownText{Mixed,String}
+    @test WellKnownText2("test") isa WellKnownText2{Mixed,String}
+    @test ESRIWellKnownText("test") isa ESRIWellKnownText{Mixed,String}
+    @test GML("test") isa GML{Mixed}
+    @test GML(Geom(), "test") isa GML{Geom}
+    @test GML(CRS(), "test") isa GML{CRS} # Probably doesn't actually exist
+    @test KML("test") isa KML
+    @test GeoJSON("test") isa "test"
+end
+
+
 @testset "Test conversion to string or int" begin
     @test convert(String, ProjString("+proj=test")) == "+proj=test"
     @test convert(String, EPSG(4326)) == "EPSG:4326"
     @test convert(Int, EPSG(4326)) == 4326
     @test convert(String, WellKnownText("test")) == "test"
     @test convert(String, WellKnownText2("test")) == "test"
+    @test convert(String, ESRIWellKnownText("test")) == "test"
     @test convert(String, GML("test")) == "test"
     @test convert(String, KML("test")) == "test"
     @test convert(String, GeoJSON("test")) == "test"

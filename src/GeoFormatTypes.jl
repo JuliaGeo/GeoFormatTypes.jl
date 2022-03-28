@@ -95,7 +95,7 @@ mode(::Type{<:MixedFormat{M}}) where M = M()
 
 # Most GeoFormat types wrap String or have a constructor for string inputs
 Base.convert(::Type{String}, input::GeoFormat) = val(input)
-Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input))
+Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input)))
 
 """
 Proj string
@@ -173,7 +173,7 @@ end
 """
 Constructor for "EPSG:1234" string input
 """
-function EPSG(input::AbstractString) = begin
+function EPSG(input::AbstractString)
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
     code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
     EPSG(code)
@@ -189,6 +189,7 @@ Keyhole Markup Language
 struct KML <: GeometryFormat
     val::String
 end
+convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
 
 """
 Geography Markup Language

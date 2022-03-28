@@ -8,16 +8,16 @@ using GeoFormatTypes: Geom, CRS, Mixed
 end
 
 @testset "Test constructors" begin
-    @test ProjString("+proj=test") isa ProjString{String}
+    @test ProjString("+proj=test") isa ProjString
     @test EPSG(4326) isa EPSG
-    @test WellKnownText("test") isa WellKnownText{Mixed,String}
-    @test WellKnownText2("test") isa WellKnownText2{Mixed,String}
-    @test ESRIWellKnownText("test") isa ESRIWellKnownText{Mixed,String}
+    @test WellKnownText("test") isa WellKnownText{Mixed}
+    @test WellKnownText2("test") isa WellKnownText2{Mixed}
+    @test ESRIWellKnownText("test") isa ESRIWellKnownText{Mixed}
     @test GML("test") isa GML{Mixed}
     @test GML(Geom(), "test") isa GML{Geom}
     @test GML(CRS(), "test") isa GML{CRS} # Probably doesn't actually exist
     @test KML("test") isa KML
-    @test GeoJSON("test") isa "test"
+    @test GeoJSON("test") isa GeoJSON
 end
 
 

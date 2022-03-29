@@ -189,7 +189,8 @@ Keyhole Markup Language
 struct KML <: GeometryFormat
     val::String
 end
-convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
+# We know KML always has a crs of EPSG(4326)
+Base.convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
 
 """
 Geography Markup Language

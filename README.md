@@ -7,7 +7,7 @@
 GeoFormatTypes defines wrapper types to make it easy to pass and dispatch on geographic formats
 like Well Known Text or GeoJSON between packages. This way information about
 what format is contained is kept for later use, - instead of passing a `String`
-or `Int` that could be from any type.
+or `Int` that could mean anything.
 
 Wrapper types also allow methods such as `convert` to work with data in multiple
 formats, instead of defining lists of format-specific handling methods.

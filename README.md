@@ -4,7 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaGeo.github.io/GeoFormatTypes.jl/dev)
 [![CI](https://github.com/JuliaGeo/GeoFormatTypes.jl/workflows/CI/badge.svg)](https://github.com/JuliaGeo/GeoFormatTypes.jl/actions?query=workflow%3ACI)
 
-GeoFormatTypes defines wrapper types to make it easy to pass geographic formats
+GeoFormatTypes defines wrapper types to make it easy to pass and dispatch on geographic formats
 like Well Known Text or GeoJSON between packages. This way information about
 what format is contained is kept for later use, - instead of passing a `String`
 or `Int` that could be from any type.

@@ -11,7 +11,7 @@ or `Int` that could mean anything.
 
 Wrapper types also allow methods such as `convert` to work with data in multiple
 formats, instead of defining lists of format-specific handling methods.
-Currently ArchGDAL.jl is priveledged to define `convert` methods for
+Currently ArchGDAL.jl is privileged to define `convert` methods for
 GeoFormatTypes.jl objects, using GDAL. When it is loaded, objects can be
 converted from one format to another:
 

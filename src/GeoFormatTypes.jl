@@ -9,7 +9,7 @@ end GeoFormatTypes
 
 export GeoFormat
 
-export CoordinateReferenceSystemFormat, EPSG, ProjString, CoordSys
+export CoordinateReferenceSystemFormat, EPSG, ProjString, CoordSys, GML
 
 export GeometryFormat, GeoJSON, KML
 
@@ -103,7 +103,7 @@ mode(::Type{<:MixedFormat{M}}) where M = M()
 
 # Most GeoFormat types wrap String or have a constructor for string inputs
 Base.convert(::Type{String}, input::GeoFormat) = val(input)
-Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(input)
+Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input)))
 
 """
     ProjString <: CoordinateReferenceSystemFormat
@@ -157,9 +157,9 @@ A specific type can be specified if it is known, e.g.:
 geom = WellKnownText(Geom(), geom_string)
 ```
 """
-struct WellKnownText{X,T<:String} <: AbstractWellKnownText{X}
+struct WellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
 WellKnownText(val) = WellKnownText(Mixed(), val)
 
@@ -179,11 +179,11 @@ A specific type can be specified if it is known, e.g.:
 crs = WellKnownText2(CRS(), crs_string)
 ```
 """
-struct WellKnownText2{X,T<:String} <: AbstractWellKnownText{X}
+struct WellKnownText2{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
-WellKnownText2(val) = WellKnownText(Mixed(), val)
+WellKnownText2(val) = WellKnownText2(Mixed(), val)
 
 """
     ESRIWellKnownText <: AbstractWellKnownText
@@ -202,10 +202,11 @@ A specific type can be specified if it is known, e.g:
 crs = ESRIWellKnownText(CRS(), crs_string)
 ```
 """
-struct ESRIWellKnownText{X,T<:String} <: AbstractWellKnownText{X}
+struct ESRIWellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
-    val::T
+    val::String
 end
+ESRIWellKnownText(val) = ESRIWellKnownText(Mixed(), val)
 
 """
     WellKnownBinary <: MixedFormat
@@ -244,7 +245,6 @@ using `convert`, or another `CoordinateReferenceSystemFormat` when ArchGDAL.jl i
 struct EPSG <: CoordinateReferenceSystemFormat
     val::Int
 end
-
 function EPSG(input::AbstractString)
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
     code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
@@ -268,6 +268,8 @@ which is the default for KML.
 struct KML <: GeometryFormat
     val::String
 end
+# We know KML always has a crs of EPSG(4326)
+Base.convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
 
 """
     GML <: MixedFormat
@@ -277,9 +279,9 @@ Wrapper for Geography Markup Language string.
 These contain geometry data, but may also have embedded crs information.
 `GML` can be converted to either a `GeometryFormat` or `CoordinateReferenceSystemFormat`.
 """
-struct GML{X,T<:String} <: MixedFormat{X}
+struct GML{X} <: MixedFormat{X}
     mode::X
-    val::T
+    val::String
 end
 GML(val) = GML(Mixed(), val)
 

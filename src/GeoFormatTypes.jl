@@ -35,6 +35,8 @@ Get the contained value of a GeoFormat type.
 function val end
 
 """
+    GeoFormat
+
 Abstract supertype for geospatial data formats
 """
 abstract type GeoFormat end
@@ -70,17 +72,23 @@ end
 
 
 """
+    CoordinateReferenceSystemFormat <: GeoFormat
+
 Formats representing coordinate reference systems
 """
 abstract type CoordinateReferenceSystemFormat <: GeoFormat end
 
 """
+    GeometryFormat <: GeoFormat
+
 Formats representing geometries. These wrappers simply mark string
 formats that may optionally be converted to Geoetry objects at a later point.
 """
 abstract type GeometryFormat <: GeoFormat end
 
 """
+    MixedFormat <: GeoFormat
+
 Formats that may hold either or both coordinate reference systems and geometries.
 """
 abstract type MixedFormat{X} <: GeoFormat end
@@ -98,7 +106,11 @@ Base.convert(::Type{String}, input::GeoFormat) = val(input)
 Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input)))
 
 """
-Proj string
+    ProjString <: CoordinateReferenceSystemFormat
+
+    ProjString(x::String)
+
+Wrapper for Proj strings. String input must start with "$PROJ_PREFIX".
 """
 struct ProjString <: CoordinateReferenceSystemFormat
     val::String
@@ -110,20 +122,40 @@ struct ProjString <: CoordinateReferenceSystemFormat
 end
 
 """
-Mapinfo CoordSys string
+    CoordSys <: CoordinateReferenceSystemFormat
+
+    CoordSys(val)
+
+Wrapper for a Mapinfo CoordSys string.
 """
 struct CoordSys <: CoordinateReferenceSystemFormat
     val::String
 end
 
 """
-Well known text has a number of versions and standards, and can
-represent coordinate reference systems or geometric data.
+    AbstractWellKnownText <: MixedFormat
+
+Well known text has a number of versions and standards, and can hold
+either coordinate reference systems or geometric data in string format.
 """
 abstract type AbstractWellKnownText{X} <: MixedFormat{X} end
 
 """
-Well known text v1 following the OGC standard
+    WellKnownText <: AbstractWellKnownText
+
+    WellKnownText(val)
+    WellKnownText(mode, val)
+    
+Weapper for Well-Known-Text v1, following the OGC standard.
+These may hold CRS or geometry data.
+
+These may hold CRS or geometry data. The default mode is `Mixed()`,
+and conversions to either type will be attempted where possible.
+A specific type can be specified if it is known, e.g.:
+
+```julia
+geom = WellKnownText(Geom(), geom_string)
+```
 """
 struct WellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
@@ -132,7 +164,20 @@ end
 WellKnownText(val) = WellKnownText(Mixed(), val)
 
 """
-Well known text v2 following the new OGC standard
+    WellKnownText2 <: AbstractWellKnownText
+
+    WellKnownText2(val)
+    WellKnownText2(mode, val)
+
+Weapper for Well-Known-Text v2 objects, following the new OGC standard.
+
+These may hold CRS or geometry data. The default mode is `Mixed()`,
+and conversions to either type will be attempted where possible.
+A specific type can be specified if it is known, e.g.:
+
+```julia
+crs = WellKnownText2(CRS(), crs_string)
+```
 """
 struct WellKnownText2{X} <: AbstractWellKnownText{X}
     mode::X
@@ -141,7 +186,21 @@ end
 WellKnownText2(val) = WellKnownText2(Mixed(), val)
 
 """
-Well known text following the ESRI standard
+    ESRIWellKnownText <: AbstractWellKnownText
+
+    ESRIWellKnownText(x::String)
+    ESRIWellKnownText(::CRS, x::String)
+    ESRIWellKnownText(::Geom, x::String)
+
+Wrapper for Well-Known-Text strings, following the ESRI standard.
+
+These may hold CRS or geometry data. The default mode is `Mixed`,
+and conversions to either type will be attempted where possible.
+A specific type can be specified if it is known, e.g:
+
+```julia
+crs = ESRIWellKnownText(CRS(), crs_string)
+```
 """
 struct ESRIWellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
@@ -150,7 +209,17 @@ end
 ESRIWellKnownText(val) = ESRIWellKnownText(Mixed(), val)
 
 """
-Well known binary
+    WellKnownBinary <: MixedFormat
+
+Wrapper for Well-Known-Binary objects.
+
+These may hold CRS or geometry data. The default mode is `Mixed`,
+and conversions to either type will be attempted where possible.
+A specific type can be specified if it is known, e.g:
+
+```julia
+crs = WellKnownBinary(CRS(), crs_blob)
+```
 """
 struct WellKnownBinary{X,T} <: MixedFormat{X}
     mode::X
@@ -163,16 +232,19 @@ Base.convert(::Type{String}, input::WellKnownBinary) =
 
 
 """
+    EPSG <: CoordinateReferenceSystemFormat
+
+    EPSG(input)
+
 EPSG code representing a coordinate reference system from the
 EPSG spatial reference system registry.
+
+String input must start with "$EPSG_PREFIX". `EPSG` can be converted to an `Int` or `String`
+using `convert`, or another `CoordinateReferenceSystemFormat` when ArchGDAL.jl is loaded.
 """
 struct EPSG <: CoordinateReferenceSystemFormat
     val::Int
 end
-
-"""
-Constructor for "EPSG:1234" string input
-"""
 function EPSG(input::AbstractString)
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
     code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
@@ -184,7 +256,14 @@ Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, val(input))
 Base.convert(::Type{EPSG}, input::Int) = EPSG(input)
 
 """
-Keyhole Markup Language
+    KML <: GeometryFormat
+
+Wrapper object for "Keyhole Markup Language" (KML) strings.
+
+See: https://www.ogc.org/standards/kml/
+
+Can be converted to a `String`. Conversion to crs will convert from EPSG(4326),
+which is the default for KML.
 """
 struct KML <: GeometryFormat
     val::String
@@ -193,7 +272,12 @@ end
 Base.convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
 
 """
-Geography Markup Language
+    GML <: MixedFormat
+
+Wrapper for Geography Markup Language string.
+
+These contain geometry data, but may also have embedded crs information.
+`GML` can be converted to either a `GeometryFormat` or `CoordinateReferenceSystemFormat`.
 """
 struct GML{X} <: MixedFormat{X}
     mode::X
@@ -202,7 +286,11 @@ end
 GML(val) = GML(Mixed(), val)
 
 """
-GeoJSON String or Dict
+    GeoJSON <: GeometryFormat
+
+Wrapper for a GeoJSON `String` or `Dict`.
+
+Conversion between `Dict` and `String` values is not yet handles.
 """
 struct GeoJSON{T} <: GeometryFormat
     val::T

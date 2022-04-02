@@ -21,11 +21,59 @@ const PROJ_PREFIX = "+proj="
 const EPSG_PREFIX = "EPSG:"
 # TODO more verification that types are wrapping the right format.
 
-# Traits for mixed crs/geometry formats.
+"""
+    FormatMode
+
+Traits to indicate the mode of `MixedFormat` types.
+"""
 abstract type FormatMode end
+
+"""
+    Geom <: FormatMode
+
+    Geom()
+    
+Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+contains geometry data.
+"""
 struct Geom <: FormatMode end
+
+"""
+    CRS <: FormatMode
+
+    CRS()
+    
+Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+contains only coordinate reference system data.
+"""
 struct CRS <: FormatMode end
-struct Mixed <: FormatMode end
+
+"""
+   MixedFormatMode <: FormatMode
+    
+Abstract supertype for [`FormatMode`](@ref) where both
+geometry and coordinate reference system data are or may be present.
+"""
+abstract type MixedFormatMode <: FormatMode end
+"""
+    Extended <: MixedFormatMode <: FormatMode
+
+    Extended()
+    
+Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+contains both geometry and coordinate reference system.
+"""
+struct Extended <: MixedFormatMode end
+
+"""
+    Unknown <: MixedFormatMode <: FormatMode
+
+    Unknown()
+    
+Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+contains either geometry or coordinate reference system data, or both.
+"""
+struct Unknown <: MixedFormatMode end
 
 """
     val(f::GeoFormat)
@@ -48,20 +96,20 @@ Base.convert(target::Type{T1}, source::T2; kwargs...) where {T1<:GeoFormat,T2<:G
     sourcemode = mode(source)
     targetmode = mode(target)
     convertmode = if targetmode isa Geom
-        if sourcemode isa Union{Mixed,Geom}
+        if sourcemode isa Union{MixedFormatMode,Geom}
             Geom() # Geom is the default if both formats are mixed
         else
             throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
         end
     elseif targetmode isa CRS
-        if sourcemode isa Union{Mixed,CRS}
+        if sourcemode isa Union{MixedFormatMode,CRS}
             CRS()
         else
             throw(ArgumentError("cannot convert $(typeof(source)) to $target"))
         end
-    else # targetmode isa Mixed
-        # Mixed to Mixed defaults to Geom
-        if sourcemode isa Union{Mixed,Geom}
+    else # targetmode isa MixedFormatMode
+        # MixedFormatMode to MixedFormatMode defaults to Geom
+        if sourcemode isa Union{MixedFormatMode,Geom}
             Geom()
         else
             CRS()
@@ -98,7 +146,7 @@ val(x::GeoFormat) = x.val
 mode(format::GeoFormat) = mode(typeof(format))
 mode(::Type{<:GeometryFormat}) = Geom()
 mode(::Type{<:CoordinateReferenceSystemFormat}) = CRS()
-mode(::Type{<:MixedFormat}) = Mixed()
+mode(::Type{<:MixedFormat}) = Unknown()
 mode(::Type{<:MixedFormat{M}}) where M = M()
 
 # Most GeoFormat types wrap String or have a constructor for string inputs
@@ -161,7 +209,7 @@ struct WellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
     val::String
 end
-WellKnownText(val) = WellKnownText(Mixed(), val)
+WellKnownText(val) = WellKnownText(Unknown(), val)
 
 """
     WellKnownText2 <: AbstractWellKnownText
@@ -171,7 +219,7 @@ WellKnownText(val) = WellKnownText(Mixed(), val)
 
 Weapper for Well-Known-Text v2 objects, following the new OGC standard.
 
-These may hold CRS or geometry data. The default mode is `Mixed()`,
+These may hold CRS or geometry data. The default mode is `Unknown()`,
 and conversions to either type will be attempted where possible.
 A specific type can be specified if it is known, e.g.:
 
@@ -183,7 +231,7 @@ struct WellKnownText2{X} <: AbstractWellKnownText{X}
     mode::X
     val::String
 end
-WellKnownText2(val) = WellKnownText2(Mixed(), val)
+WellKnownText2(val) = WellKnownText2(Unknown(), val)
 
 """
     ESRIWellKnownText <: AbstractWellKnownText
@@ -194,7 +242,7 @@ WellKnownText2(val) = WellKnownText2(Mixed(), val)
 
 Wrapper for Well-Known-Text strings, following the ESRI standard.
 
-These may hold CRS or geometry data. The default mode is `Mixed`,
+These may hold CRS or geometry data. The default mode is `Unknown`,
 and conversions to either type will be attempted where possible.
 A specific type can be specified if it is known, e.g:
 
@@ -206,14 +254,14 @@ struct ESRIWellKnownText{X} <: AbstractWellKnownText{X}
     mode::X
     val::String
 end
-ESRIWellKnownText(val) = ESRIWellKnownText(Mixed(), val)
+ESRIWellKnownText(val) = ESRIWellKnownText(Unknown(), val)
 
 """
     WellKnownBinary <: MixedFormat
 
 Wrapper for Well-Known-Binary objects.
 
-These may hold CRS or geometry data. The default mode is `Mixed`,
+These may hold CRS or geometry data. The default mode is `Unknown`,
 and conversions to either type will be attempted where possible.
 A specific type can be specified if it is known, e.g:
 
@@ -225,7 +273,7 @@ struct WellKnownBinary{X,T} <: MixedFormat{X}
     mode::X
     val::T
 end
-WellKnownBinary(val) = WellKnownBinary(Mixed(), val)
+WellKnownBinary(val) = WellKnownBinary(Unknown(), val)
 
 Base.convert(::Type{String}, input::WellKnownBinary) =
     error("`convert` to `String` is not defined for `WellKnownBinary`")
@@ -283,7 +331,7 @@ struct GML{X} <: MixedFormat{X}
     mode::X
     val::String
 end
-GML(val) = GML(Mixed(), val)
+GML(val) = GML(Unknown(), val)
 
 """
     GeoJSON <: GeometryFormat

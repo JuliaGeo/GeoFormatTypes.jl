@@ -1,5 +1,5 @@
 using GeoFormatTypes, Test
-using GeoFormatTypes: Geom, CRS, Mixed
+using GeoFormatTypes: Geom, CRS, Extended, Unknown
 
 @testset "Test construcors" begin
     @test_throws ArgumentError ProjString("+lat_ts=56.5 +ellps=GRS80")
@@ -10,10 +10,15 @@ end
 @testset "Test constructors" begin
     @test ProjString("+proj=test") isa ProjString
     @test EPSG(4326) isa EPSG
-    @test WellKnownText("test") isa WellKnownText{Mixed}
-    @test WellKnownText2("test") isa WellKnownText2{Mixed}
-    @test ESRIWellKnownText("test") isa ESRIWellKnownText{Mixed}
-    @test GML("test") isa GML{Mixed}
+    @test WellKnownText("test") isa WellKnownText{Unknown}
+    @test WellKnownBinary([1,2,3,4]) isa WellKnownBinary{Unknown}
+    @test WellKnownText2("test") isa WellKnownText2{Unknown}
+    @test ESRIWellKnownText("test") isa ESRIWellKnownText{Unknown}
+    @test WellKnownText(Extended(), "test") isa WellKnownText{Extended}
+    @test WellKnownBinary(Extended(), [1,2,3,4]) isa WellKnownBinary{Extended}
+    @test WellKnownText2(CRS(), "test") isa WellKnownText2{CRS}
+    @test ESRIWellKnownText(Geom(), "test") isa ESRIWellKnownText{Geom}
+    @test GML("test") isa GML{Unknown}
     @test GML(Geom(), "test") isa GML{Geom}
     @test GML(CRS(), "test") isa GML{CRS} # Probably doesn't actually exist
     @test KML("test") isa KML
@@ -42,7 +47,7 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
 
 @testset "Test convert mode allocation" begin
     @testset "Test identical type is passed through unchanged" begin
-        @test convert(WellKnownText, WellKnownText(Mixed(), "test")) == WellKnownText(Mixed(), "test")
+        @test convert(WellKnownText, WellKnownText(Extended(), "test")) == WellKnownText(Extended(), "test")
         @test convert(ProjString, ProjString("+proj=test")) == ProjString("+proj=test")
     end
     @testset "Test conversions are assigned to crs or geom correctly" begin
@@ -62,18 +67,27 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
         @test convert(WellKnownText2, WellKnownText(Geom(), "test")) == (:geom,)
         @test convert(WellKnownText, WellKnownText2(Geom(), "test")) == (:geom,)
 
-        @test convert(GeoJSON, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(KML, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(GML, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(ESRIWellKnownText, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(WellKnownBinary, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(WellKnownText2, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(WellKnownText2, WellKnownText(Mixed(), "test")) == (:geom,)
-        @test convert(WellKnownText, WellKnownText2(Mixed(), "test")) == (:geom,)
+        @test convert(GeoJSON, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(KML, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(GML, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(ESRIWellKnownText, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(WellKnownBinary, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(WellKnownText2, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(WellKnownText2, WellKnownText(Extended(), "test")) == (:geom,)
+        @test convert(WellKnownText, WellKnownText2(Extended(), "test")) == (:geom,)
+
+        @test convert(GeoJSON, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(KML, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(GML, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(ESRIWellKnownText, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(WellKnownBinary, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(WellKnownText2, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(WellKnownText2, WellKnownText(Unknown(), "test")) == (:geom,)
+        @test convert(WellKnownText, WellKnownText2(Unknown(), "test")) == (:geom,)
     end
     @testset "Test kargs pass through convert" begin
         @test convert(WellKnownText, WellKnownText2(CRS(), "test"); order=:trad) == (:crs, :order=>:trad,)
-        @test convert(GML, WellKnownText(Mixed(), "test"); order=:custom) == (:geom, :order=>:custom)
+        @test convert(GML, WellKnownText(Extended(), "test"); order=:custom) == (:geom, :order=>:custom)
     end
     @testset "Test conversions that are not possible throw an error" begin
         @test_throws ArgumentError convert(KML, ProjString("+proj=test"))

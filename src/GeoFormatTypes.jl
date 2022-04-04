@@ -24,7 +24,7 @@ const EPSG_PREFIX = "EPSG:"
 """
     FormatMode
 
-Traits to indicate the mode of `MixedFormat` types.
+Traits to indicate the format type, such as `Geom`, `CRS` or `MixedFormat`.
 """
 abstract type FormatMode end
 

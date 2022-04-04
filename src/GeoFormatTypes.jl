@@ -43,7 +43,7 @@ struct Geom <: FormatMode end
 
     CRS()
     
-Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains only coordinate reference system data.
 """
 struct CRS <: FormatMode end

@@ -51,7 +51,7 @@ struct CRS <: FormatMode end
 """
    MixedFormatMode <: FormatMode
     
-Abstract supertype for [`FormatMode`](@ref) where both
+Abstract subtype of [`FormatMode`](@ref) where both
 geometry and coordinate reference system data are or may be present.
 """
 abstract type MixedFormatMode <: FormatMode end

@@ -33,7 +33,7 @@ abstract type FormatMode end
 
     Geom()
     
-Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
+Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains geometry data.
 """
 struct Geom <: FormatMode end

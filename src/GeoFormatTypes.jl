@@ -70,8 +70,8 @@ struct Extended <: MixedFormatMode end
 
     Unknown()
     
-Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
-contains either geometry or coordinate reference system data, or both.
+Trait specifying that for a mixed format object, like [`WellKnownText`](@ref),
+it is unknown whether it stores geometry or coordinate reference system data, or both.
 """
 struct Unknown <: MixedFormatMode end
 

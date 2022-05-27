@@ -41,3 +41,5 @@ crs = WellKnownText2(CRS(), crs_string)
 If the contents are not known, the default `Mixed()` will mostly do the right
 thing anyway - it can be converted to either CRS or geometry formats using
 `convert`, given that it is actually possible to do with the contained data.
+
+We thank Julia Computing for supporting contributions to this package.

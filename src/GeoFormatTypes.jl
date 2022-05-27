@@ -9,7 +9,7 @@ end GeoFormatTypes
 
 export GeoFormat
 
-export CoordinateReferenceSystemFormat, EPSG, ProjString, CoordSys, GML
+export CoordinateReferenceSystemFormat, EPSG, ProjString, ProjJSON, CoordSys, GML
 
 export GeometryFormat, GeoJSON, KML
 
@@ -32,7 +32,7 @@ abstract type FormatMode end
     Geom <: FormatMode
 
     Geom()
-    
+
 Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains geometry data.
 """
@@ -42,7 +42,7 @@ struct Geom <: FormatMode end
     CRS <: FormatMode
 
     CRS()
-    
+
 Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains only coordinate reference system data.
 """
@@ -50,7 +50,7 @@ struct CRS <: FormatMode end
 
 """
    MixedFormatMode <: FormatMode
-    
+
 Abstract subtype of [`FormatMode`](@ref) where both
 geometry and coordinate reference system data are or may be present.
 """
@@ -59,7 +59,7 @@ abstract type MixedFormatMode <: FormatMode end
     Extended <: MixedFormatMode <: FormatMode
 
     Extended()
-    
+
 Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
 contains both geometry and coordinate reference system.
 """
@@ -69,7 +69,7 @@ struct Extended <: MixedFormatMode end
     Unknown <: MixedFormatMode <: FormatMode
 
     Unknown()
-    
+
 Trait specifying that for a mixed format object, like [`WellKnownText`](@ref),
 it is unknown whether it stores geometry or coordinate reference system data, or both.
 """
@@ -147,11 +147,11 @@ mode(format::GeoFormat) = mode(typeof(format))
 mode(::Type{<:GeometryFormat}) = Geom()
 mode(::Type{<:CoordinateReferenceSystemFormat}) = CRS()
 mode(::Type{<:MixedFormat}) = Unknown()
-mode(::Type{<:MixedFormat{M}}) where M = M()
+mode(::Type{<:MixedFormat{M}}) where {M} = M()
 
 # Most GeoFormat types wrap String or have a constructor for string inputs
 Base.convert(::Type{String}, input::GeoFormat) = val(input)
-Base.convert(::Type{T}, input::AbstractString) where T <: GeoFormat = T(convert(String, (input)))
+Base.convert(::Type{T}, input::AbstractString) where {T<:GeoFormat} = T(convert(String, (input)))
 
 """
     ProjString <: CoordinateReferenceSystemFormat
@@ -164,7 +164,29 @@ struct ProjString <: CoordinateReferenceSystemFormat
     val::String
     ProjString(input::String) = begin
         startswith(input, PROJ_PREFIX) ||
-            throw(ArgumentError("Not a Proj string: $input does not start with $PROJ_PREFIX"))
+        throw(ArgumentError("Not a Proj string: $input does not start with $PROJ_PREFIX"))
+        new(input)
+    end
+end
+
+"""
+    ProjJSON <: CoordinateReferenceSystemFormat
+
+    ProjJSON(x::Dict{String,<:Any})
+    ProjJSON(x::String)
+
+Wrapper for [PROJJSON](https://proj.org/specifications/projjson.html).
+"""
+struct ProjJSON <: CoordinateReferenceSystemFormat
+    val::Union{String,Dict{String,<:Any}}
+    ProjJSON(input::Dict{String,<:Any}) = begin
+        haskey(input, "type") ||
+        throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
+        new(input)
+    end
+    ProjJSON(input::String) = begin
+        occursin("type", input) ||
+        throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
         new(input)
     end
 end
@@ -193,7 +215,7 @@ abstract type AbstractWellKnownText{X} <: MixedFormat{X} end
 
     WellKnownText(val)
     WellKnownText(mode, val)
-    
+
 Weapper for Well-Known-Text v1, following the OGC standard.
 These may hold CRS or geometry data.
 
@@ -317,7 +339,7 @@ struct KML <: GeometryFormat
     val::String
 end
 # We know KML always has a crs of EPSG(4326)
-Base.convert(::Type{T}, ::KML) where T<:CoordinateReferenceSystemFormat = convert(T, EPSG(4326))
+Base.convert(::Type{T}, ::KML) where {T<:CoordinateReferenceSystemFormat} = convert(T, EPSG(4326))
 
 """
     GML <: MixedFormat

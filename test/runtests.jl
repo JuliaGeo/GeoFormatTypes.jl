@@ -3,19 +3,23 @@ using GeoFormatTypes: Geom, CRS, Extended, Unknown
 
 @testset "Test construcors" begin
     @test_throws ArgumentError ProjString("+lat_ts=56.5 +ellps=GRS80")
+    @test_throws ArgumentError ProjJSON(Dict("fype" => 1))
+    @test_throws ArgumentError ProjJSON("fype")
     @test_throws ArgumentError EPSG("ERROR:4326")
     @test EPSG("EPSG:4326") == EPSG(4326)
 end
 
 @testset "Test constructors" begin
     @test ProjString("+proj=test") isa ProjString
+    @test ProjJSON(Dict("type" => "GeographicCRS")) isa ProjJSON
+    @test ProjJSON("type: GeographicCRS") isa ProjJSON
     @test EPSG(4326) isa EPSG
     @test WellKnownText("test") isa WellKnownText{Unknown}
-    @test WellKnownBinary([1,2,3,4]) isa WellKnownBinary{Unknown}
+    @test WellKnownBinary([1, 2, 3, 4]) isa WellKnownBinary{Unknown}
     @test WellKnownText2("test") isa WellKnownText2{Unknown}
     @test ESRIWellKnownText("test") isa ESRIWellKnownText{Unknown}
     @test WellKnownText(Extended(), "test") isa WellKnownText{Extended}
-    @test WellKnownBinary(Extended(), [1,2,3,4]) isa WellKnownBinary{Extended}
+    @test WellKnownBinary(Extended(), [1, 2, 3, 4]) isa WellKnownBinary{Extended}
     @test WellKnownText2(CRS(), "test") isa WellKnownText2{CRS}
     @test ESRIWellKnownText(Geom(), "test") isa ESRIWellKnownText{Geom}
     @test GML("test") isa GML{Unknown}
@@ -24,7 +28,6 @@ end
     @test KML("test") isa KML
     @test GeoJSON("test") isa GeoJSON
 end
-
 
 @testset "Test conversion to string or int" begin
     @test convert(String, ProjString("+proj=test")) == "+proj=test"
@@ -86,8 +89,8 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
         @test convert(WellKnownText, WellKnownText2(Unknown(), "test")) == (:geom,)
     end
     @testset "Test kargs pass through convert" begin
-        @test convert(WellKnownText, WellKnownText2(CRS(), "test"); order=:trad) == (:crs, :order=>:trad,)
-        @test convert(GML, WellKnownText(Extended(), "test"); order=:custom) == (:geom, :order=>:custom)
+        @test convert(WellKnownText, WellKnownText2(CRS(), "test"); order=:trad) == (:crs, :order => :trad,)
+        @test convert(GML, WellKnownText(Extended(), "test"); order=:custom) == (:geom, :order => :custom)
     end
     @testset "Test conversions that are not possible throw an error" begin
         @test_throws ArgumentError convert(KML, ProjString("+proj=test"))

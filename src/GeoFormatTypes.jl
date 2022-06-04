@@ -164,7 +164,7 @@ struct ProjString <: CoordinateReferenceSystemFormat
     val::String
     ProjString(input::String) = begin
         startswith(input, PROJ_PREFIX) ||
-        throw(ArgumentError("Not a Proj string: $input does not start with $PROJ_PREFIX"))
+            throw(ArgumentError("Not a Proj string: $input does not start with $PROJ_PREFIX"))
         new(input)
     end
 end
@@ -181,12 +181,12 @@ struct ProjJSON <: CoordinateReferenceSystemFormat
     val::Union{String,Dict{String,<:Any}}
     ProjJSON(input::Dict{String,<:Any}) = begin
         haskey(input, "type") ||
-        throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
+            throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
         new(input)
     end
     ProjJSON(input::String) = begin
         occursin("type", input) ||
-        throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
+            throw(ArgumentError("Not a ProjJSON: $input does not have the required key 'type'"))
         new(input)
     end
 end

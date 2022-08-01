@@ -216,7 +216,7 @@ abstract type AbstractWellKnownText{X} <: MixedFormat{X} end
     WellKnownText(val)
     WellKnownText(mode, val)
 
-Weapper for Well-Known-Text v1, following the OGC standard.
+Wrapper for Well-known text (WKT) v1, following the OGC standard.
 These may hold CRS or geometry data.
 
 These may hold CRS or geometry data. The default mode is `Mixed()`,
@@ -239,7 +239,7 @@ WellKnownText(val) = WellKnownText(Unknown(), val)
     WellKnownText2(val)
     WellKnownText2(mode, val)
 
-Weapper for Well-Known-Text v2 objects, following the new OGC standard.
+Wrapper for Well-known text v2 objects, following the new OGC standard.
 
 These may hold CRS or geometry data. The default mode is `Unknown()`,
 and conversions to either type will be attempted where possible.
@@ -262,7 +262,7 @@ WellKnownText2(val) = WellKnownText2(Unknown(), val)
     ESRIWellKnownText(::CRS, x::String)
     ESRIWellKnownText(::Geom, x::String)
 
-Wrapper for Well-Known-Text strings, following the ESRI standard.
+Wrapper for Well-known text strings, following the ESRI standard.
 
 These may hold CRS or geometry data. The default mode is `Unknown`,
 and conversions to either type will be attempted where possible.
@@ -281,7 +281,7 @@ ESRIWellKnownText(val) = ESRIWellKnownText(Unknown(), val)
 """
     WellKnownBinary <: MixedFormat
 
-Wrapper for Well-Known-Binary objects.
+Wrapper for Well-known binary (WKB) objects.
 
 These may hold CRS or geometry data. The default mode is `Unknown`,
 and conversions to either type will be attempted where possible.
@@ -332,7 +332,7 @@ Wrapper object for "Keyhole Markup Language" (KML) strings.
 
 See: https://www.ogc.org/standards/kml/
 
-Can be converted to a `String`. Conversion to crs will convert from EPSG(4326),
+Can be converted to a `String`. Conversion to crs will convert from `EPSG(4326)`,
 which is the default for KML.
 """
 struct KML <: GeometryFormat
@@ -360,7 +360,7 @@ GML(val) = GML(Unknown(), val)
 
 Wrapper for a GeoJSON `String` or `Dict`.
 
-Conversion between `Dict` and `String` values is not yet handles.
+Conversion between `Dict` and `String` values is not yet handled.
 """
 struct GeoJSON{T} <: GeometryFormat
     val::T

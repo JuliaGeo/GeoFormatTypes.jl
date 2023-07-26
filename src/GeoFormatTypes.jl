@@ -312,18 +312,21 @@ EPSG spatial reference system registry.
 String input must start with "$EPSG_PREFIX". `EPSG` can be converted to an `Int` or `String`
 using `convert`, or another `CoordinateReferenceSystemFormat` when ArchGDAL.jl is loaded.
 """
-struct EPSG <: CoordinateReferenceSystemFormat
-    val::Int
+struct EPSG{N} <: CoordinateReferenceSystemFormat
+    val::NTuple{N,Int}
 end
+EPSG(input::Vararg{Int}) = EPSG(input)
 function EPSG(input::AbstractString)
     startswith(input, EPSG_PREFIX) || throw(ArgumentError("String $input does no start with $EPSG_PREFIX"))
-    code = parse(Int, input[findlast(EPSG_PREFIX, input).stop+1:end])
+    code = Tuple(parse.(Int, split(input[findlast(EPSG_PREFIX, input).stop+1:end], "+")))
     EPSG(code)
 end
 
-Base.convert(::Type{Int}, input::EPSG) = val(input)
-Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, val(input))
-Base.convert(::Type{EPSG}, input::Int) = EPSG(input)
+val(input::EPSG{1}) = input.val[1]  # backwards compatible
+Base.convert(::Type{Int}, input::EPSG{1}) = val(input)
+Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, join(input.val, "+"))
+Base.convert(::Type{EPSG}, input::Int) = EPSG((input,))
+
 
 """
     KML <: GeometryFormat

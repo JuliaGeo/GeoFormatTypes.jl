@@ -7,6 +7,7 @@ using GeoFormatTypes: Geom, CRS, Extended, Unknown
     @test_throws ArgumentError ProjJSON("fype")
     @test_throws ArgumentError EPSG("ERROR:4326")
     @test EPSG("EPSG:4326") == EPSG(4326)
+    @test EPSG("EPSG:4326+3855") == EPSG((4326, 3855))
 end
 
 @testset "Test constructors" begin
@@ -14,6 +15,7 @@ end
     @test ProjJSON(Dict("type" => "GeographicCRS")) isa ProjJSON
     @test ProjJSON("type: GeographicCRS") isa ProjJSON
     @test EPSG(4326) isa EPSG
+    @test EPSG((4326, 3855)) isa EPSG
     @test WellKnownText("test") isa WellKnownText{Unknown}
     @test WellKnownBinary([1, 2, 3, 4]) isa WellKnownBinary{Unknown}
     @test WellKnownText2("test") isa WellKnownText2{Unknown}
@@ -33,6 +35,8 @@ end
     @test convert(String, ProjString("+proj=test")) == "+proj=test"
     @test convert(String, EPSG(4326)) == "EPSG:4326"
     @test convert(Int, EPSG(4326)) == 4326
+    @test_throws MethodError convert(Int, EPSG(4326, 3855))
+    @test convert(String, EPSG(4326, 3855)) == "EPSG:4326+3855"
     @test convert(String, WellKnownText("test")) == "test"
     @test convert(String, WellKnownText2("test")) == "test"
     @test convert(String, ESRIWellKnownText("test")) == "test"
@@ -41,6 +45,10 @@ end
     @test convert(String, GeoJSON("test")) == "test"
 end
 
+@testset "Test val" begin
+    @test GeoFormatTypes.val(EPSG(4326)) == 4326
+    @test GeoFormatTypes.val(EPSG(4326, 3855)) == (4326, 3855)
+end
 
 # `convert` placeholder methods
 Base.convert(target::Type{<:GeoFormat}, mode::Union{Geom,Type{Geom}}, source::GeoFormat; kwargs...) =

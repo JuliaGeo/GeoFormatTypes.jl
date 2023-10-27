@@ -15,6 +15,7 @@ end
     @test ProjJSON(Dict("type" => "GeographicCRS")) isa ProjJSON
     @test ProjJSON("type: GeographicCRS") isa ProjJSON
     @test EPSG(4326) isa EPSG
+    @test EPSG(Int16(4326)) isa EPSG
     @test EPSG((4326, 3855)) isa EPSG
     @test WellKnownText("test") isa WellKnownText{Unknown}
     @test WellKnownBinary([1, 2, 3, 4]) isa WellKnownBinary{Unknown}
@@ -34,7 +35,8 @@ end
 @testset "Test conversion to string or int" begin
     @test convert(String, ProjString("+proj=test")) == "+proj=test"
     @test convert(String, EPSG(4326)) == "EPSG:4326"
-    @test convert(Int, EPSG(4326)) == 4326
+    @test convert(Int64, EPSG(4326)) == 4326
+    @test convert(Int32, EPSG(4326)) == Int32(4326)
     @test_throws MethodError convert(Int, EPSG(4326, 3855))
     @test convert(String, EPSG(4326, 3855)) == "EPSG:4326+3855"
     @test convert(String, WellKnownText("test")) == "test"

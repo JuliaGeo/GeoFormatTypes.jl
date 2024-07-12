@@ -109,4 +109,22 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
         @test_throws ArgumentError convert(CoordSys, WellKnownText(Geom(), "test"))
         @test_throws ArgumentError convert(EPSG, WellKnownText(Geom(), "test"))
     end
+    @testset "Display methods" begin
+        buf = IOBuffer()
+        cbuf = IOContext(buf, :compact => true)
+
+        epsg = EPSG(4326, 3855)
+        show(cbuf, epsg)
+        @test "EPSG" == String(take!(buf))
+
+        show(buf, epsg)
+        @test "EPSG:4326+3855" == String(take!(buf))
+
+        wkt = WellKnownText(Extended(), "test")
+        show(cbuf, wkt)
+        @test "WellKnownText" == String(take!(buf))
+
+        show(buf, wkt)
+        @test "WellKnownText with Extended mode: test" == String(take!(buf))
+    end
 end

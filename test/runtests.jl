@@ -113,18 +113,32 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
         buf = IOBuffer()
         cbuf = IOContext(buf, :compact => true)
 
-        epsg = EPSG(4326, 3855)
-        show(cbuf, epsg)
-        @test "EPSG" == String(take!(buf))
+        for (obj, (cstr, str)) in [
+            (ProjString("+proj=test"), ("ProjString", "ProjString: +proj=test")),
+            (ProjJSON(Dict("type" => "GeographicCRS")), ("ProjJSON", "ProjJSON: Dict(\"type\" => \"GeographicCRS\")")),
+            (ProjJSON("type: GeographicCRS"), ("ProjJSON", "ProjJSON: type: GeographicCRS")),
+            (EPSG(4326), ("EPSG", "EPSG:4326")),
+            (EPSG((4326, 3855)), ("EPSG", "EPSG:4326+3855")),
+            (WellKnownText("test"), ("WellKnownText", "WellKnownText with Unknown mode: test")),
+            (WellKnownBinary([1, 2, 3, 4]), ("WellKnownBinary", "WellKnownBinary with Unknown mode: [1, 2, 3, 4]")),
+            (WellKnownText2("test"), ("WellKnownText2", "WellKnownText2 with Unknown mode: test")),
+            (ESRIWellKnownText("test"), ("ESRIWellKnownText", "ESRIWellKnownText with Unknown mode: test")),
+            (WellKnownText(Extended(), "test"), ("WellKnownText", "WellKnownText with Extended mode: test")),
+            (WellKnownBinary(Extended(), [1, 2, 3, 4]), ("WellKnownBinary", "WellKnownBinary with Extended mode: [1, 2, 3, 4]")),
+            (WellKnownText2(CRS(), "test"), ("WellKnownText2", "WellKnownText2 with CRS mode: test")),
+            (ESRIWellKnownText(Geom(), "test"), ("ESRIWellKnownText", "ESRIWellKnownText with Geometry mode: test")),
+            (GML("test"), ("GML", "GML with Unknown mode: test")),
+            (GML(Geom(), "test"), ("GML", "GML with Geometry mode: test")),
+            (GML(CRS(), "test"), ("GML", "GML with CRS mode: test")),
+            (KML("test"), ("KML", "KML: test")),
+            (GeoJSON("test"), ("GeoJSON String", "GeoJSON String: test")),
+        ]
 
-        show(buf, epsg)
-        @test "EPSG:4326+3855" == String(take!(buf))
+            show(cbuf, MIME"text/plain"(), obj)
+            @test cstr == String(take!(buf))
+            show(buf, MIME"text/plain"(), obj)
+            @test str == String(take!(buf))
 
-        wkt = WellKnownText(Extended(), "test")
-        show(cbuf, wkt)
-        @test "WellKnownText" == String(take!(buf))
-
-        show(buf, wkt)
-        @test "WellKnownText with Extended mode: test" == String(take!(buf))
+        end
     end
 end

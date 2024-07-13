@@ -37,6 +37,7 @@ Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains geometry data.
 """
 struct Geom <: FormatMode end
+Base.show(io::IO, ::MIME"text/plain", ::Type{Geom}) = print(io, "Geometry mode")
 
 """
     CRS <: FormatMode
@@ -47,6 +48,7 @@ Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains only coordinate reference system data.
 """
 struct CRS <: FormatMode end
+Base.show(io::IO, ::MIME"text/plain", ::Type{CRS}) = print(io, "CRS mode")
 
 """
    MixedFormatMode <: FormatMode
@@ -64,6 +66,7 @@ Trait specifying that a mixed format object, like [`WellKnownText`](@ref),
 contains both geometry and coordinate reference system.
 """
 struct Extended <: MixedFormatMode end
+Base.show(io::IO, ::MIME"text/plain", ::Type{Extended}) = print(io, "Extended mode")
 
 """
     Unknown <: MixedFormatMode <: FormatMode
@@ -74,6 +77,7 @@ Trait specifying that for a mixed format object, like [`WellKnownText`](@ref),
 it is unknown whether it stores geometry or coordinate reference system data, or both.
 """
 struct Unknown <: MixedFormatMode end
+Base.show(io::IO, ::MIME"text/plain", ::Type{Unknown}) = print(io, "Unknown mode")
 
 """
     val(f::GeoFormat)
@@ -88,6 +92,15 @@ function val end
 Abstract supertype for geospatial data formats
 """
 abstract type GeoFormat end
+
+function Base.show(io::IO, m::MIME"text/plain", gf::GeoFormat)
+    compact = get(io, :compact, false)
+    print(io, nameof(typeof(gf)))
+    if !compact
+        print(io, ": ")
+        print(io, val(gf))
+    end
+end
 
 # Convert from the same type does nothing.
 Base.convert(::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:T1} = source
@@ -168,6 +181,14 @@ struct ProjString <: CoordinateReferenceSystemFormat
         new(input)
     end
 end
+function Base.show(io::IO, m::MIME"text/plain", proj::ProjString)
+    compact = get(io, :compact, false)
+    print(io, "ProjString")
+    if !compact
+        print(io, ": ")
+        print(io, val(proj))
+    end
+end
 
 """
     ProjJSON <: CoordinateReferenceSystemFormat
@@ -209,6 +230,17 @@ Well known text has a number of versions and standards, and can hold
 either coordinate reference systems or geometric data in string format.
 """
 abstract type AbstractWellKnownText{X} <: MixedFormat{X} end
+
+function Base.show(io::IO, m::MIME"text/plain", mf::MixedFormat{X}) where {X}
+    compact = get(io, :compact, false)
+    print(io, nameof(typeof(mf)))
+    if !compact
+        print(io, " with ")
+        show(io, m, X)
+        print(io, ": ")
+        print(io, val(mf))
+    end
+end
 
 """
     WellKnownText <: AbstractWellKnownText
@@ -328,6 +360,15 @@ Base.convert(::Type{T}, input::EPSG{1}) where {T<:Integer} = convert(T, val(inpu
 Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, join(input.val, "+"))
 Base.convert(::Type{EPSG}, input::Integer) = EPSG((input,))
 
+function Base.show(io::IO, ::MIME"text/plain", epsg::EPSG)
+    compact = get(io, :compact, false)
+    print(io, "EPSG")
+    if !compact
+        print(io, ":")
+        print(io, join(val(epsg), "+"))
+    end
+end
+
 
 """
     KML <: GeometryFormat
@@ -359,6 +400,17 @@ struct GML{X} <: MixedFormat{X}
 end
 GML(val) = GML(Unknown(), val)
 
+function Base.show(io::IO, m::MIME"text/plain", gml::GML{T}) where {T}
+    compact = get(io, :compact, false)
+    print(io, "GML")
+    if !compact
+        print(io, " with ")
+        show(io, m, T)
+        print(io, ": ")
+        print(io, val(gml))
+    end
+end
+
 """
     GeoJSON <: GeometryFormat
 
@@ -368,6 +420,15 @@ Conversion between `Dict` and `String` values is not yet handled.
 """
 struct GeoJSON{T} <: GeometryFormat
     val::T
+end
+
+function Base.show(io::IO, m::MIME"text/plain", json::GeoJSON{T}) where {T}
+    compact = get(io, :compact, false)
+    print(io, "GeoJSON $T")
+    if !compact
+        print(io, ": ")
+        print(io, val(json))
+    end
 end
 
 end # module

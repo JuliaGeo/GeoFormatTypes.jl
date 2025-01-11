@@ -52,6 +52,30 @@ end
     @test GeoFormatTypes.val(EPSG(4326, 3855)) == (4326, 3855)
 end
 
+@testset "Equality" begin
+    @test ProjString("+proj=test") == ProjString("+proj=test")
+    @test ProjJSON(Dict("type" => "GeographicCRS")) == ProjJSON(Dict("type" => "GeographicCRS"))
+    @test ProjJSON("type: GeographicCRS") == ProjJSON("type: GeographicCRS")
+    @test EPSG(4326) == EPSG(4326)
+    @test EPSG(4326) != EPSG(3855)
+    @test EPSG(4326) != EPSG(4326, 3855)
+    @test EPSG(4326) != EPSG(3855, 4326)
+    @test EPSG(4326, 3855) == EPSG(4326, 3855)
+    @test WellKnownText("test") == WellKnownText("test")
+    @test WellKnownBinary([1, 2, 3, 4]) == WellKnownBinary([1, 2, 3, 4])
+    @test WellKnownText2("test") == WellKnownText2("test")
+    @test ESRIWellKnownText("test") == ESRIWellKnownText("test")
+    @test WellKnownText(Extended(), "test") == WellKnownText(Extended(), "test")
+    @test WellKnownBinary(Extended(), [1, 2, 3, 4]) == WellKnownBinary(Extended(), [1, 2, 3, 4])
+    @test WellKnownText2(CRS(), "test") == WellKnownText2(CRS(), "test")
+    @test ESRIWellKnownText(Geom(), "test") == ESRIWellKnownText(Geom(), "test")
+    @test GML("test") == GML("test")
+    @test GML(Geom(), "test") == GML(Geom(), "test")
+    @test GML(CRS(), "test") == GML(CRS(), "test")
+    @test KML("test") == KML("test")
+    @test GeoJSON("test") == GeoJSON("test")
+end
+
 # `convert` placeholder methods
 Base.convert(target::Type{<:GeoFormat}, mode::Union{Geom,Type{Geom}}, source::GeoFormat; kwargs...) =
     (:geom, kwargs...)

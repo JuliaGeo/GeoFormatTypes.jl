@@ -138,6 +138,7 @@ end
 Formats representing coordinate reference systems
 """
 abstract type CoordinateReferenceSystemFormat <: GeoFormat end
+Base.:(==)(x::CoordinateReferenceSystemFormat, y::CoordinateReferenceSystemFormat) = x.val == y.val
 
 """
     GeometryFormat <: GeoFormat
@@ -146,6 +147,7 @@ Formats representing geometries. These wrappers simply mark string
 formats that may optionally be converted to Geoetry objects at a later point.
 """
 abstract type GeometryFormat <: GeoFormat end
+Base.:(==)(x::GeometryFormat, y::GeometryFormat) = x.val == y.val
 
 """
     MixedFormat <: GeoFormat
@@ -153,6 +155,7 @@ abstract type GeometryFormat <: GeoFormat end
 Formats that may hold either or both coordinate reference systems and geometries.
 """
 abstract type MixedFormat{X} <: GeoFormat end
+Base.:(==)(x::MixedFormat, y::MixedFormat) = x.mode == y.mode && x.val == y.val
 
 val(x::GeoFormat) = x.val
 

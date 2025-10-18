@@ -372,6 +372,7 @@ function Base.show(io::IO, ::MIME"text/plain", epsg::EPSG)
     end
 end
 
+(::Base.Colon)(::Type{EPSG}, input::Int64) = EPSG(input)
 
 """
     KML <: GeometryFormat

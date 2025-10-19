@@ -14,6 +14,7 @@ end
     @test ProjString("+proj=test") isa ProjString
     @test ProjJSON(Dict("type" => "GeographicCRS")) isa ProjJSON
     @test ProjJSON("type: GeographicCRS") isa ProjJSON
+    @test EPSG:4326 isa EPSG
     @test EPSG(4326) isa EPSG
     @test EPSG(Int16(4326)) isa EPSG
     @test EPSG((4326, 3855)) isa EPSG

@@ -40,6 +40,16 @@ struct Geom <: FormatMode end
 Base.show(io::IO, ::MIME"text/plain", ::Type{Geom}) = print(io, "Geometry mode")
 
 """
+    CRSMode
+
+Traits to indicate the CRS type, such as `ProjectedCRS`, `GeographicCRS` or `UnknownCRS`.
+"""
+abstract type CRSMode end
+struct ProjectedCRS <: CRSMode end
+struct GeographicCRS <: CRSMode end
+struct UnknownCRS <: CRSMode end
+
+"""
     CRS <: FormatMode
 
     CRS()
@@ -47,8 +57,9 @@ Base.show(io::IO, ::MIME"text/plain", ::Type{Geom}) = print(io, "Geometry mode")
 Trait specifying that a format object, like [`WellKnownText`](@ref),
 contains only coordinate reference system data.
 """
-struct CRS <: FormatMode end
-Base.show(io::IO, ::MIME"text/plain", ::Type{CRS}) = print(io, "CRS mode")
+struct CRS{T<:CRSMode} <: FormatMode end
+CRS() = CRS{UnknownCRS}()
+Base.show(io::IO, ::MIME"text/plain", ::Type{CRS{T}}) where {T} = print(io, "$T mode")
 
 """
    MixedFormatMode <: FormatMode

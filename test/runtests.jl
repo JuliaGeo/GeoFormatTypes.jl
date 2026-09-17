@@ -1,5 +1,5 @@
 using GeoFormatTypes, Test
-using GeoFormatTypes: Geom, CRS, Extended, Unknown
+using GeoFormatTypes: Geom, CRS, Extended, Unknown, UnknownCRS
 
 @testset "Test construcors" begin
     @test_throws ArgumentError ProjString("+lat_ts=56.5 +ellps=GRS80")
@@ -24,11 +24,11 @@ end
     @test ESRIWellKnownText("test") isa ESRIWellKnownText{Unknown}
     @test WellKnownText(Extended(), "test") isa WellKnownText{Extended}
     @test WellKnownBinary(Extended(), [1, 2, 3, 4]) isa WellKnownBinary{Extended}
-    @test WellKnownText2(CRS(), "test") isa WellKnownText2{CRS}
+    @test WellKnownText2(CRS(), "test") isa WellKnownText2{CRS{UnknownCRS}}
     @test ESRIWellKnownText(Geom(), "test") isa ESRIWellKnownText{Geom}
     @test GML("test") isa GML{Unknown}
     @test GML(Geom(), "test") isa GML{Geom}
-    @test GML(CRS(), "test") isa GML{CRS} # Probably doesn't actually exist
+    @test GML(CRS(), "test") isa GML{CRS{UnknownCRS}}  # Probably doesn't actually exist
     @test KML("test") isa KML
     @test GeoJSON("test") isa GeoJSON
 end
@@ -150,11 +150,11 @@ Base.convert(target::Type{<:GeoFormat}, mode::Union{CRS,Type{CRS}}, source::GeoF
             (ESRIWellKnownText("test"), ("ESRIWellKnownText", "ESRIWellKnownText with Unknown mode: test")),
             (WellKnownText(Extended(), "test"), ("WellKnownText", "WellKnownText with Extended mode: test")),
             (WellKnownBinary(Extended(), [1, 2, 3, 4]), ("WellKnownBinary", "WellKnownBinary with Extended mode: [1, 2, 3, 4]")),
-            (WellKnownText2(CRS(), "test"), ("WellKnownText2", "WellKnownText2 with CRS mode: test")),
+            (WellKnownText2(CRS(), "test"), ("WellKnownText2", "WellKnownText2 with UnknownCRS mode: test")),
             (ESRIWellKnownText(Geom(), "test"), ("ESRIWellKnownText", "ESRIWellKnownText with Geometry mode: test")),
             (GML("test"), ("GML", "GML with Unknown mode: test")),
             (GML(Geom(), "test"), ("GML", "GML with Geometry mode: test")),
-            (GML(CRS(), "test"), ("GML", "GML with CRS mode: test")),
+            (GML(CRS(), "test"), ("GML", "GML with UnknownCRS mode: test")),
             (KML("test"), ("KML", "KML: test")),
             (GeoJSON("test"), ("GeoJSON String", "GeoJSON String: test")),
         ]

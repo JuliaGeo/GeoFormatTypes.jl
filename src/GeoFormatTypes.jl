@@ -328,12 +328,16 @@ A specific type can be specified if it is known, e.g:
 ```julia
 crs = WellKnownBinary(CRS(), crs_blob)
 ```
+
+`string` of a `WellKnownBinary` holding bytes gives the hex encoding,
+which can be read back with `hex2bytes`.
 """
 struct WellKnownBinary{X,T} <: MixedFormat{X}
     mode::X
     val::T
 end
 WellKnownBinary(val) = WellKnownBinary(Unknown(), val)
+Base.print(io::IO, wkb::WellKnownBinary{<:Any,<:AbstractVector{UInt8}}) = print(io, bytes2hex(val(wkb)))
 
 Base.convert(::Type{String}, input::WellKnownBinary) =
     error("`convert` to `String` is not defined for `WellKnownBinary`")

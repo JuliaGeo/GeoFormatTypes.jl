@@ -48,6 +48,20 @@ end
     @test convert(String, GeoJSON("test")) == "test"
 end
 
+@testset "Test string" begin
+    @test string(ProjString("+proj=test")) == "+proj=test"
+    @test string(ProjJSON("type: GeographicCRS")) == "type: GeographicCRS"
+    @test string(EPSG(4326)) == "EPSG:4326"
+    @test string(EPSG(4326, 3855)) == "EPSG:4326+3855"
+    @test EPSG(string(EPSG(4326, 3855))) == EPSG(4326, 3855)
+    @test string(WellKnownText(Geom(), "test")) == "test"
+    @test string(WellKnownBinary([1, 2, 3, 4])) == "[1, 2, 3, 4]"
+    @test string(GML("test")) == "test"
+    @test string(KML("test")) == "test"
+    @test string(GeoJSON("test")) == "test"
+    @test repr(EPSG(4326)) == "EPSG{1}((4326,))"
+end
+
 @testset "Test val" begin
     @test GeoFormatTypes.val(EPSG(4326)) == 4326
     @test GeoFormatTypes.val(EPSG(4326, 3855)) == (4326, 3855)

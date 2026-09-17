@@ -102,6 +102,9 @@ function Base.show(io::IO, m::MIME"text/plain", gf::GeoFormat)
     end
 end
 
+# `print` and `string` give the wrapped value, `repr` keeps the constructor form
+Base.print(io::IO, gf::GeoFormat) = print(io, val(gf))
+
 # Convert from the same type does nothing.
 Base.convert(::Type{T1}, source::T2) where {T1<:GeoFormat,T2<:T1} = source
 # Convert uses the `mode` trait to distinguish crs form geometry conversion
@@ -325,12 +328,16 @@ A specific type can be specified if it is known, e.g:
 ```julia
 crs = WellKnownBinary(CRS(), crs_blob)
 ```
+
+`string` of a `WellKnownBinary` holding bytes gives the hex encoding,
+which can be read back with `hex2bytes`.
 """
 struct WellKnownBinary{X,T} <: MixedFormat{X}
     mode::X
     val::T
 end
 WellKnownBinary(val) = WellKnownBinary(Unknown(), val)
+Base.print(io::IO, wkb::WellKnownBinary{<:Any,<:AbstractVector{UInt8}}) = print(io, bytes2hex(val(wkb)))
 
 Base.convert(::Type{String}, input::WellKnownBinary) =
     error("`convert` to `String` is not defined for `WellKnownBinary`")
@@ -362,6 +369,7 @@ val(input::EPSG{1}) = input.val[1]  # backwards compatible
 Base.convert(::Type{T}, input::EPSG{1}) where {T<:Integer} = convert(T, val(input))
 Base.convert(::Type{String}, input::EPSG) = string(EPSG_PREFIX, join(input.val, "+"))
 Base.convert(::Type{EPSG}, input::Integer) = EPSG((input,))
+Base.print(io::IO, epsg::EPSG) = print(io, convert(String, epsg))
 
 function Base.show(io::IO, ::MIME"text/plain", epsg::EPSG)
     compact = get(io, :compact, false)

@@ -48,6 +48,32 @@ end
     @test convert(String, GeoJSON("test")) == "test"
 end
 
+@testset "Test string" begin
+    @test string(ProjString("+proj=test")) == "+proj=test"
+    @test string(ProjJSON("type: GeographicCRS")) == "type: GeographicCRS"
+    @test string(EPSG(4326)) == "EPSG:4326"
+    @test string(EPSG(4326, 3855)) == "EPSG:4326+3855"
+    @test EPSG(string(EPSG(4326, 3855))) == EPSG(4326, 3855)
+
+    wkt = WellKnownText(Geom(), "POINT (1 2)")
+    @test string(wkt) == "POINT (1 2)"
+    @test WellKnownText(Geom(), string(wkt)) == wkt
+    wkt2 = WellKnownText2(CRS(), """GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563]],CS[ellipsoidal,2],AXIS["latitude",north],AXIS["longitude",east],ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",4326]]""")
+    @test WellKnownText2(CRS(), string(wkt2)) == wkt2
+
+    # POINT (1 2)
+    bytes = UInt8[0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40]
+    wkb = WellKnownBinary(Geom(), bytes)
+    @test string(wkb) == "0101000000000000000000f03f0000000000000040"
+    @test WellKnownBinary(Geom(), hex2bytes(string(wkb))) == wkb
+    @test string(WellKnownBinary([1, 2, 3, 4])) == "[1, 2, 3, 4]"
+
+    @test string(GML("test")) == "test"
+    @test string(KML("test")) == "test"
+    @test string(GeoJSON("test")) == "test"
+    @test repr(EPSG(4326)) == "EPSG{1}((4326,))"
+end
+
 @testset "Test val" begin
     @test GeoFormatTypes.val(EPSG(4326)) == 4326
     @test GeoFormatTypes.val(EPSG(4326, 3855)) == (4326, 3855)
